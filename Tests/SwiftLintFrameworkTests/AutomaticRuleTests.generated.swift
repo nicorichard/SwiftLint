@@ -133,7 +133,7 @@ class ConvenienceTypeRuleTests: XCTestCase {
 
 class DiscouredStructRuntimeLetRuleTests: XCTestCase {
     func testWithDefaultConfiguration() {
-        verifyRule(DicouragedStructRuntimeLet.description)
+        verifyRule(DiscouragedStructRuntimeLet.description)
     }
 }
 

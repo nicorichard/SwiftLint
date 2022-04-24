@@ -40,7 +40,7 @@ public let primaryRuleList = RuleList(rules: [
     DiscouragedObjectLiteralRule.self,
     DiscouragedOptionalBooleanRule.self,
     DiscouragedOptionalCollectionRule.self,
-    DicouragedStructRuntimeLet.self,
+    DiscouragedStructRuntimeLet.self,
     DuplicateEnumCasesRule.self,
     DuplicateImportsRule.self,
     DuplicatedKeyInDictionaryLiteralRule.self,

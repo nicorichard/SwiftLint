@@ -1,12 +1,14 @@
 import Foundation
 import SourceKittenFramework
 
-public struct DicouragedStructRuntimeLet: OptInRule, SubstitutionCorrectableRule, AutomaticTestableRule, ConfigurationProviderRule {
-    
+public struct DiscouragedStructRuntimeLet: OptInRule,
+                                           SubstitutionCorrectableRule,
+                                           AutomaticTestableRule,
+                                           ConfigurationProviderRule {
     public var configuration = SeverityConfiguration(.warning)
-    
+
     public init() {}
-    
+
     public static let description = RuleDescription(
         identifier: "discouraged_struct_runtime_let",
         name: "Discouraged Struct Runtime Let Assignment",
@@ -32,7 +34,7 @@ public struct DicouragedStructRuntimeLet: OptInRule, SubstitutionCorrectableRule
             struct Foo {
                 private(set) var bar: Int
             }
-            """),
+            """)
         ],
         triggeringExamples: [
             Example("""
@@ -53,14 +55,15 @@ public struct DicouragedStructRuntimeLet: OptInRule, SubstitutionCorrectableRule
             """)
         ]
     )
-    
+
     private static let letString = "let"
     private static let varString = "var"
     private static let assignmentOperatorString = "="
-    
-    private func violationRanges(file: SwiftLintFile, kind: SwiftDeclarationKind,
-                          dictionary: SourceKittenDictionary,
-                          parentDictionary: SourceKittenDictionary?) -> [NSRange] {
+
+    private func violationRanges(file: SwiftLintFile,
+                                 kind: SwiftDeclarationKind,
+                                 dictionary: SourceKittenDictionary,
+                                 parentDictionary: SourceKittenDictionary?) -> [NSRange] {
         guard
             kind == .varInstance,
             parentDictionary?.kind == SwiftDeclarationKind.struct.rawValue,
@@ -73,17 +76,17 @@ public struct DicouragedStructRuntimeLet: OptInRule, SubstitutionCorrectableRule
         else {
             return []
         }
-        
+
         let letRange = substring.range(of: Self.letString)
         guard letRange.length == Self.letString.count else {
             return []
         }
-        
+
         return [
             NSRange(location: range.lowerBound + letRange.lowerBound, length: letRange.length)
         ]
     }
-    
+
     public func validate(file: SwiftLintFile) -> [StyleViolation] {
         violationRanges(in: file).map {
             StyleViolation(ruleDescription: Self.description,
@@ -91,14 +94,14 @@ public struct DicouragedStructRuntimeLet: OptInRule, SubstitutionCorrectableRule
                            location: Location(file: file, characterOffset: $0.location))
         }
     }
-    
+
     public func violationRanges(in file: SwiftLintFile) -> [NSRange] {
         return file.structureDictionary.traverseWithParentDepthFirst { parent, subDict in
             guard let kind = subDict.declarationKind else { return nil }
             return violationRanges(file: file, kind: kind, dictionary: subDict, parentDictionary: parent)
         }
     }
-    
+
     public func substitution(for violationRange: NSRange, in file: SwiftLintFile) -> (NSRange, String)? {
         return (violationRange, Self.varString)
     }
