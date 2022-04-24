@@ -9,8 +9,8 @@ public struct DicouragedStructRuntimeLet: OptInRule, SubstitutionCorrectableRule
     
     public static let description = RuleDescription(
         identifier: "discouraged_struct_runtime_let",
-        name: "Disouraged Struct Runtime Let Assignment",
-        description: "Struct `let` property values should be known at compile time, and constant for all copies.",
+        name: "Discouraged Struct Runtime Let Assignment",
+        description: "A struct's `let` properties should have a constant value assigned at compile time.",
         kind: .idiomatic,
         nonTriggeringExamples: [
             Example("""
