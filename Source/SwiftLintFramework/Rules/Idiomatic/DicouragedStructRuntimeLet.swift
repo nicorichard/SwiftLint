@@ -23,22 +23,32 @@ public struct DicouragedStructRuntimeLet: OptInRule, SubstitutionCorrectableRule
                 var bar: Int
             }
             """),
+            Example("""
+            class Foo {
+                let bar: Int
+            }
+            """),
+            Example("""
+            struct Foo {
+                private(set) var bar: Int
+            }
+            """),
         ],
         triggeringExamples: [
             Example("""
             struct Foo {
-                ↓let baz: Int
+                ↓let bar: Int
             }
             """)
         ],
         corrections: [
             Example("""
             struct Foo {
-                ↓let baz: Int
+                ↓let bar: Int
             }
             """): Example("""
             struct Foo {
-                var baz: Int
+                var bar: Int
             }
             """)
         ]
