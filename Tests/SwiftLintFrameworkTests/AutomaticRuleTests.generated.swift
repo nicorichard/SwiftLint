@@ -131,6 +131,12 @@ class ConvenienceTypeRuleTests: XCTestCase {
     }
 }
 
+class DiscouredStructRuntimeLetRuleTests: XCTestCase {
+    func testWithDefaultConfiguration() {
+        verifyRule(DicouragedStructRuntimeLet.description)
+    }
+}
+
 class DiscardedNotificationCenterObserverRuleTests: XCTestCase {
     func testWithDefaultConfiguration() {
         verifyRule(DiscardedNotificationCenterObserverRule.description)
