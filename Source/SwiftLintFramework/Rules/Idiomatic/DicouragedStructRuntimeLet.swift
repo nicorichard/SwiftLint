@@ -1,7 +1,8 @@
 import Foundation
 import SourceKittenFramework
 
-public struct DicouragedStructRuntimeLet: OptInRule, AutomaticTestableRule, ConfigurationProviderRule {
+public struct DicouragedStructRuntimeLet: OptInRule, SubstitutionCorrectableRule, AutomaticTestableRule, ConfigurationProviderRule {
+    
     public var configuration = SeverityConfiguration(.warning)
     
     public init() {}
@@ -29,35 +30,66 @@ public struct DicouragedStructRuntimeLet: OptInRule, AutomaticTestableRule, Conf
                 ↓let baz: Int
             }
             """)
+        ],
+        corrections: [
+            Example("""
+            struct Foo {
+                ↓let baz: Int
+            }
+            """): Example("""
+            struct Foo {
+                var baz: Int
+            }
+            """)
         ]
     )
     
-    private func validate(file: SwiftLintFile, kind: SwiftDeclarationKind,
+    private static let letString = "let"
+    private static let varString = "var"
+    private static let assignmentOperatorString = "="
+    
+    private func violationRanges(file: SwiftLintFile, kind: SwiftDeclarationKind,
                           dictionary: SourceKittenDictionary,
-                          parentDictionary: SourceKittenDictionary?) -> [StyleViolation] {
+                          parentDictionary: SourceKittenDictionary?) -> [NSRange] {
         guard
             kind == .varInstance,
             parentDictionary?.kind == SwiftDeclarationKind.struct.rawValue,
             dictionary.setterAccessibility == nil,
             dictionary.bodyLength == nil,
-            let offset = dictionary.offset,
             let byteRange = dictionary.byteRange,
-            file.stringView.substringWithByteRange(byteRange)?.contains("=") ?? true
+            let substring = file.stringView.substringWithByteRange(byteRange) as? NSString,
+            !substring.contains(Self.assignmentOperatorString),
+            let range = file.stringView.byteRangeToNSRange(byteRange)
         else {
             return []
         }
         
+        let letRange = substring.range(of: Self.letString)
+        guard letRange.length == Self.letString.count else {
+            return []
+        }
+        
         return [
-            StyleViolation(ruleDescription: Self.description,
-                           severity: configuration.severity,
-                           location: Location(file: file, byteOffset: offset))
+            NSRange(location: range.lowerBound + letRange.lowerBound, length: letRange.length)
         ]
     }
     
     public func validate(file: SwiftLintFile) -> [StyleViolation] {
+        violationRanges(in: file).map {
+            StyleViolation(ruleDescription: Self.description,
+                           severity: configuration.severity,
+                           location: Location(file: file, characterOffset: $0.location))
+        }
+    }
+    
+    public func violationRanges(in file: SwiftLintFile) -> [NSRange] {
         return file.structureDictionary.traverseWithParentDepthFirst { parent, subDict in
             guard let kind = subDict.declarationKind else { return nil }
-            return validate(file: file, kind: kind, dictionary: subDict, parentDictionary: parent)
+            return violationRanges(file: file, kind: kind, dictionary: subDict, parentDictionary: parent)
         }
+    }
+    
+    public func substitution(for violationRange: NSRange, in file: SwiftLintFile) -> (NSRange, String)? {
+        return (violationRange, Self.varString)
     }
 }
